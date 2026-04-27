@@ -6,6 +6,10 @@
   # (that caused an infinite recursion earlier).
 
   config.vim = {
+    # Ensure lazy loader is enabled so lazy.plugins entries are used
+    lazy = {
+      enable = true;
+    };
     # Theme: attempt to load rafi/neo-hybrid.vim at runtime. We add an
     # extraConfig that activates the colorscheme. Installing the plugin
     # may still be required (see lazy.plugins below).
@@ -49,5 +53,15 @@
         };
       };
     };
+
+    # Add an explicit fallback keymap so <space>e works even if the lazy
+    # loader hasn't loaded neo-tree yet.
+    keymaps = [
+      {
+        key = "<space>e";
+        mode = "n";
+        action = ":Neotree toggle<CR>";
+      }
+    ];
   };
 }
