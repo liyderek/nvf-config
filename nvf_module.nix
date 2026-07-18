@@ -27,6 +27,7 @@ in {
   config.vim = {
     viAlias = true;
     vimAlias = true;
+    extraPackages = [pkgs.gemini-cli pkgs.matlab-language-server pkgs.ripgrep pkgs.asm-lsp];
     debugMode = {
       enable = false;
       level = 16;
@@ -110,7 +111,10 @@ in {
 
       # Languages that are enabled in the maximal configuration.
       bash.enable = true;
-      clang.enable = true;
+      clang = {
+        enable = true;
+        extraDiagnostics.enable = false;
+      };
       cmake.enable = true;
       css.enable = true;
       html.enable = true;
@@ -119,6 +123,7 @@ in {
       java.enable = true;
       kotlin.enable = true;
       typescript.enable = true;
+      tsx.enable = true;
       go.enable = true;
       lua.enable = true;
       zig.enable = true;
@@ -209,6 +214,41 @@ in {
     luaConfigPre = ''
       vim.o.background = "dark"
       pcall(vim.cmd, "colorscheme neohybrid")
+    '';
+
+    # luaConfigRC.folding = ''
+    #   -- Bind Enter to toggle folds
+    #   vim.keymap.set('n', '<CR>', 'za', { noremap = true, silent = true })
+    # '';
+
+    luaConfigRC.matlab-lsp = ''
+      require('lspconfig').matlab_ls.setup({
+        cmd = { "${pkgs.matlab-language-server}/bin/matlab-language-server", "--stdio" },
+        filetypes = { "matlab" },
+        root_dir = require('lspconfig.util').root_pattern(".git", "*.prj", "*.mlapp", "*.m"),
+        single_file_support = true,
+        settings = {
+          matlab = {
+            installPath = "/home/derek/matlab",
+          },
+        },
+      })
+    '';
+
+    luaConfigRC.asm-lsp = ''
+      local lspconfig = require('lspconfig')
+      lspconfig.asm_lsp.setup({
+        filetypes = { "asm", "masm", "vash", "S", "s" },
+        root_dir = lspconfig.util.root_pattern(".git", ".asm-lsp.toml", "Makefile"),
+      })
+    '';
+
+    luaConfigRC.friendly-snippets = ''
+      require("luasnip.loaders.from_vscode").lazy_load()
+    '';
+
+    luaConfigRC.markdown-preview = ''
+      vim.keymap.set('n', '<space>mp', '<cmd>MarkdownPreviewToggle<CR>', { noremap = true, silent = true, desc = 'Toggle Markdown/LaTeX preview' })
     '';
 
     luaConfigRC.competitest = ''
@@ -416,6 +456,7 @@ in {
     '';
 
     extraPlugins = {
+
       # luaConfigPost = ''
       #   local ok, lsp_lines = pcall(require, "lsp_lines")
       #   if ok then
@@ -437,6 +478,8 @@ in {
 
       nvim-dap.package = pkgs.vimPlugins.nvim-dap;
       nvim-dap-ui.package = pkgs.vimPlugins.nvim-dap-ui;
+      "markdown-preview.nvim".package = pkgs.vimPlugins.markdown-preview-nvim;
+      friendly-snippets.package = pkgs.vimPlugins.friendly-snippets;
     };
 
     # extraPlugins.lsp-lines = {
@@ -461,6 +504,7 @@ in {
           "lsp"
           "path"
           "snippets"
+          "buffer"
         ];
       };
     };
@@ -494,6 +538,12 @@ in {
           mode = "n";
           action = "<cmd>Neotree position=current toggle<CR>";
           desc = "Toggle Neo-tree fullscreen";
+        }
+        {
+          key = "<space>o";
+          mode = "n";
+          action = "<cmd>Neotree position=left dir=/home/derek/Documents/Obsidian\\ Vault reveal=true<CR>";
+          desc = "Open Obsidian vault sidebar";
         }
       ];
       plugins.floaterm = {
@@ -585,8 +635,16 @@ in {
         enable = true;
         setupOpts.load."core.dirman".config.workspaces.notes = "~/notes";
       };
+      obsidian = {
+        enable = true;
+        setupOpts.workspaces = [
+          {
+            name = "personal";
+            path = "/home/derek/Documents/Obsidian Vault";
+          }
+        ];
+      };
       orgmode.enable = false;
-      mind-nvim.enable = false;
       todo-comments.enable = true;
     };
 
@@ -607,6 +665,7 @@ in {
         enable = true;
         navbuddy.enable = true;
       };
+      nvim-ufo.enable = false;
       smartcolumn = {
         enable = true;
         setupOpts.custom_colorcolumn = {
@@ -633,12 +692,8 @@ in {
       avante-nvim = {
         enable = true;
         setupOpts = {
-          provider = "openai";
-          auto_suggestions_provider = "openai";
-          providers.openai = {
-            api_key_name = "OPENAI_API_KEY";
-            model = "gpt-4o-mini";
-          };
+          provider = "gemini-cli";
+          auto_suggestions_provider = "gemini-cli";
           selection.hint_display = "none";
           mappings.zen_mode = "<C-a>";
         };
