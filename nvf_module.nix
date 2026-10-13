@@ -14,6 +14,8 @@
     };
   };
 
+  latexSnippets = pkgs.writeTextDir "UltiSnips/tex.snippets" (builtins.readFile ./snippets/tex.snippets);
+
   svelteNodeModule = pkgs.runCommand "svelte-node-module" {} ''
     mkdir -p "$out/lib/node_modules/svelte"
     tar -xzf ${
@@ -27,7 +29,9 @@ in {
   config.vim = {
     viAlias = true;
     vimAlias = true;
-    extraPackages = [pkgs.gemini-cli pkgs.matlab-language-server pkgs.ripgrep pkgs.asm-lsp];
+    withPython3 = true;
+    extraPackages = [pkgs.gemini-cli pkgs.matlab-language-server pkgs.ripgrep pkgs.asm-lsp pkgs.tex-fmt pkgs.zathura];
+    additionalRuntimePaths = [latexSnippets];
     debugMode = {
       enable = false;
       level = 16;
@@ -138,7 +142,17 @@ in {
       };
       toml.enable = true;
       xml.enable = true;
-      tex.enable = true;
+      tex = {
+        enable = true;
+        lsp = {
+          enable = true;
+          servers = ["texlab"];
+        };
+        format = {
+          enable = true;
+          type = ["tex-fmt"];
+        };
+      };
 
       # Language modules that are not as common.
       openscad.enable = false;
@@ -209,17 +223,29 @@ in {
       };
     };
 
-    theme.enable = false;
+    theme.enable = true;
+    theme.name = "catppuccin";
+    theme.style = "mocha";
 
     luaConfigPre = ''
       vim.o.background = "dark"
-      pcall(vim.cmd, "colorscheme neohybrid")
     '';
+    # pcall(vim.cmd, "colorscheme neohybrid")
 
     # luaConfigRC.folding = ''
     #   -- Bind Enter to toggle folds
     #   vim.keymap.set('n', '<CR>', 'za', { noremap = true, silent = true })
     # '';
+
+    luaConfigRC.aerial = ''
+      require("aerial").setup({
+        backends = { "lsp", "treesitter", "markdown", "asciidoc", "man" },
+        layout = { default_direction = "right" },
+        attach_mode = "window",
+        show_guides = true,
+      })
+      vim.keymap.set("n", "<leader>o", "<cmd>AerialToggle!<CR>", { desc = "Toggle outline" })
+    '';
 
     luaConfigRC.matlab-lsp = ''
       require('lspconfig').matlab_ls.setup({
@@ -241,6 +267,29 @@ in {
         filetypes = { "asm", "masm", "vash", "S", "s" },
         root_dir = lspconfig.util.root_pattern(".git", ".asm-lsp.toml", "Makefile"),
       })
+    '';
+
+    globals = {
+      vimtex_view_method = "zathura";
+      vimtex_compiler_method = "latexmk";
+      vimtex_compiler_latexmk = {
+        aux_dir = ".build";
+        out_dir = ".build";
+        options = [
+          "-pdf"
+          "-shell-escape"
+          "-verbose"
+          "-file-line-error"
+          "-synctex=1"
+          "-interaction=nonstopmode"
+        ];
+      };
+    };
+
+    luaConfigRC.ultisnips = ''
+      vim.g.UltiSnipsExpandTrigger = "<c-j>"
+      vim.g.UltiSnipsJumpForwardTrigger = "<c-j>"
+      vim.g.UltiSnipsJumpBackwardTrigger = "<c-k>"
     '';
 
     luaConfigRC.friendly-snippets = ''
@@ -456,7 +505,6 @@ in {
     '';
 
     extraPlugins = {
-
       # luaConfigPost = ''
       #   local ok, lsp_lines = pcall(require, "lsp_lines")
       #   if ok then
@@ -468,9 +516,9 @@ in {
       #   end
       # '';
 
-      neo-hybrid-theme = {
-        package = neoHybrid;
-      };
+      # neo-hybrid-theme = {
+      #   package = neoHybrid;
+      # };
 
       competitest = {
         package = pkgs.vimPlugins.competitest-nvim;
@@ -480,6 +528,8 @@ in {
       nvim-dap-ui.package = pkgs.vimPlugins.nvim-dap-ui;
       "markdown-preview.nvim".package = pkgs.vimPlugins.markdown-preview-nvim;
       friendly-snippets.package = pkgs.vimPlugins.friendly-snippets;
+      ultisnips.package = pkgs.vimPlugins.ultisnips;
+      aerial-nvim.package = pkgs.vimPlugins.aerial-nvim;
     };
 
     # extraPlugins.lsp-lines = {
@@ -490,6 +540,9 @@ in {
 
     formatter.conform-nvim.setupOpts.formatters.prettier.env = {
       NODE_PATH = "${svelteNodeModule}/lib/node_modules";
+    };
+    formatter.conform-nvim.setupOpts.formatters."tex-fmt" = {
+      args = ["--stdin" "--tabsize" "4" "--wraplen" "120"];
     };
 
     # nvf provides various autocomplete options. The tried and tested nvim-cmp
@@ -539,33 +592,51 @@ in {
           action = "<cmd>Neotree position=current toggle<CR>";
           desc = "Toggle Neo-tree fullscreen";
         }
-        {
-          key = "<space>o";
-          mode = "n";
-          action = "<cmd>Neotree position=left dir=/home/derek/Documents/Obsidian\\ Vault reveal=true<CR>";
-          desc = "Open Obsidian vault sidebar";
-        }
+        # {
+        #   key = "<space>o";
+        #   mode = "n";
+        #   action = "<cmd>Neotree position=left dir=/home/derek/Documents/Obsidian\\ Vault reveal=true<CR>";
+        #   desc = "Open Obsidian vault sidebar";
+        # }
       ];
-      plugins.floaterm = {
-        package = pkgs.vimPlugins.floaterm;
-        setupOpts = {};
-        cmd = ["FloatermToggle"];
+      plugins.vimtex = {
+        package = pkgs.vimPlugins.vimtex;
+        ft = ["tex" "bib"];
+      };
+      plugins.vim-floaterm = {
+        package = pkgs.vimPlugins.vim-floaterm;
+        cmd = ["FloatermNew" "FloatermToggle"];
         keys = [
           {
-            key = "<space>p";
+            key = "<leader>ft";
             mode = "n";
-            action = "<cmd>FloatermToggle<CR>";
-            desc = "Toggle Floaterm";
+            action = ":FloatermNew --name=run --height=0.8 --width=0.7 --autoclose=2 zsh <CR>";
+            desc = "Open floaterm";
+          }
+          {
+            key = "t";
+            mode = "n";
+            action = ":FloatermToggle myfloat<CR>";
+            desc = "Toggle floaterm";
+          }
+          {
+            key = "<Esc>";
+            mode = "t";
+            action = "<C-\\><C-n>:q<CR>";
+            desc = "Exit floaterm";
           }
         ];
       };
     };
 
     tabline = {
-      nvimBufferline.enable = true;
+      nvimBufferline.enable = false;
     };
 
-    treesitter.context.enable = true;
+    treesitter.context = {
+      enable = true;
+      setupOpts.max_lines = 3;
+    };
 
     binds = {
       whichKey.enable = true;
@@ -635,15 +706,15 @@ in {
         enable = true;
         setupOpts.load."core.dirman".config.workspaces.notes = "~/notes";
       };
-      obsidian = {
-        enable = true;
-        setupOpts.workspaces = [
-          {
-            name = "personal";
-            path = "/home/derek/Documents/Obsidian Vault";
-          }
-        ];
-      };
+      # obsidian = {
+      #   enable = true;
+      #   setupOpts.workspaces = [
+      #     {
+      #       name = "personal";
+      #       path = "/home/derek/Documents/Obsidian Vault";
+      #     }
+      #   ];
+      # };
       orgmode.enable = false;
       todo-comments.enable = true;
     };
@@ -657,7 +728,7 @@ in {
 
     ui = {
       borders.enable = true;
-      noice.enable = true;
+      noice.enable = false;
       colorizer.enable = true;
       modes-nvim.enable = false; # the theme looks terrible with catppuccin
       illuminate.enable = true;
@@ -717,6 +788,12 @@ in {
 
     presence = {
       neocord.enable = true;
+    };
+
+    navigation = {
+      harpoon = {
+        enable = true;
+      };
     };
   };
 }

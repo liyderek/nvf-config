@@ -1,0 +1,426 @@
+global !p
+def math():
+    return vim.eval('vimtex#syntax#in_mathzone()') == '1'
+endglobal
+
+# ── Environments (manual) ────────────────────────────────────────────────────
+
+snippet beg "begin/end environment" b
+\begin{$1}
+	$0
+\end{$1}
+endsnippet
+
+snippet ali "align*" bA
+\begin{align*}
+	${1}
+\end{align*}
+endsnippet
+
+snippet enum "enumerate" b
+\begin{enumerate}
+	\item ${1}
+\end{enumerate}
+endsnippet
+
+snippet item "itemize" b
+\begin{itemize}
+	\item ${1}
+\end{itemize}
+endsnippet
+
+# ── Math wrappers (auto, safe due to b/w flags) ──────────────────────────────
+
+snippet mk "inline math" wA
+$${1}$
+endsnippet
+
+snippet dm "display math" bA
+\[
+	${1}
+\]
+endsnippet
+
+# ── Math mode: fractions ─────────────────────────────────────────────────────
+
+context "math()"
+snippet frac "fraction" iA
+\frac{${1:num}}{${2:denom}}
+endsnippet
+
+context "math()"
+snippet // "fraction" iA
+\frac{${1}}{${2}}
+endsnippet
+
+# ── Math mode: operators ─────────────────────────────────────────────────────
+
+context "math()"
+snippet sum "sum" wA
+\sum_{${1:i=1}}^{${2:n}} ${3}
+endsnippet
+
+context "math()"
+snippet prod "product" wA
+\prod_{${1:i=1}}^{${2:n}} ${3}
+endsnippet
+
+context "math()"
+snippet int "integral" wA
+\int_{${1:a}}^{${2:b}} ${3} \, d${4:x}
+endsnippet
+
+context "math()"
+snippet lim "limit" wA
+\lim_{${1:n} \to ${2:\infty}} ${3}
+endsnippet
+
+context "math()"
+snippet sq "square root" wA
+\sqrt{${1}}
+endsnippet
+
+context "math()"
+snippet norm "norm" wA
+\|${1}\|
+endsnippet
+
+context "math()"
+snippet ceil "ceiling" wA
+\lceil ${1} \rceil
+endsnippet
+
+context "math()"
+snippet floor "floor" wA
+\lfloor ${1} \rfloor
+endsnippet
+
+context "math()"
+snippet bigcup "bigcup" wA
+\bigcup_{${1}}^{${2}} ${3}
+endsnippet
+
+context "math()"
+snippet bigcap "bigcap" wA
+\bigcap_{${1}}^{${2}} ${3}
+endsnippet
+
+# ── Math mode: matrices ───────────────────────────────────────────────────────
+
+context "math()"
+snippet pmat "pmatrix" wA
+\begin{pmatrix} ${1} \end{pmatrix}
+endsnippet
+
+context "math()"
+snippet bmat "bmatrix" wA
+\begin{bmatrix} ${1} \end{bmatrix}
+endsnippet
+
+context "math()"
+snippet cases "cases" wA
+\begin{cases}
+	${1}
+\end{cases}
+endsnippet
+
+# ── Math mode: delimiters ─────────────────────────────────────────────────────
+
+context "math()"
+snippet lr( "left( right)" iA
+\left( ${1} \right)
+endsnippet
+
+context "math()"
+snippet lr[ "left[ right]" iA
+\left[ ${1} \right]
+endsnippet
+
+context "math()"
+snippet lr{ "left{ right}" iA
+\left\{ ${1} \right\}
+endsnippet
+
+context "math()"
+snippet lr| "left| right|" iA
+\left| ${1} \right|
+endsnippet
+
+context "math()"
+snippet lr< "left< right>" iA
+\left\langle ${1} \right\rangle
+endsnippet
+
+# ── Math mode: decorators ─────────────────────────────────────────────────────
+
+context "math()"
+snippet hat "hat" wA
+\hat{${1}}
+endsnippet
+
+context "math()"
+snippet bar "bar" wA
+\bar{${1}}
+endsnippet
+
+context "math()"
+snippet vec "vec" wA
+\vec{${1}}
+endsnippet
+
+context "math()"
+snippet tilde "tilde" wA
+\tilde{${1}}
+endsnippet
+
+context "math()"
+snippet dot "dot" wA
+\dot{${1}}
+endsnippet
+
+context "math()"
+snippet ddot "ddot" wA
+\ddot{${1}}
+endsnippet
+
+context "math()"
+snippet txt "text in math" wA
+\text{${1}}
+endsnippet
+
+# ── Text formatting (manual) ──────────────────────────────────────────────────
+
+snippet bf "bold" w
+\textbf{${1}}
+endsnippet
+
+snippet it "italic" w
+\textit{${1}}
+endsnippet
+
+snippet tt "teletype" w
+\texttt{${1}}
+endsnippet
+
+snippet em "emphasize" w
+\emph{${1}}
+endsnippet
+
+# ── Math mode: relations & arrows ─────────────────────────────────────────────
+
+context "math()"
+snippet -> "to" iA
+\to
+endsnippet
+
+context "math()"
+snippet => "implies" iA
+\implies
+endsnippet
+
+context "math()"
+snippet <=> "iff" iA
+\iff
+endsnippet
+
+context "math()"
+snippet != "neq" iA
+\neq
+endsnippet
+
+context "math()"
+snippet <= "leq" iA
+\leq
+endsnippet
+
+context "math()"
+snippet >= "geq" iA
+\geq
+endsnippet
+
+context "math()"
+snippet inf "infty" wA
+\infty
+endsnippet
+
+context "math()"
+snippet in "in" wA
+\in
+endsnippet
+
+context "math()"
+snippet notin "notin" wA
+\notin
+endsnippet
+
+context "math()"
+snippet subset "subset" wA
+\subset
+endsnippet
+
+context "math()"
+snippet cdot "cdot" wA
+\cdot
+endsnippet
+
+context "math()"
+snippet times "times" wA
+\times
+endsnippet
+
+context "math()"
+snippet forall "forall" wA
+\forall
+endsnippet
+
+context "math()"
+snippet exists "exists" wA
+\exists
+endsnippet
+
+context "math()"
+snippet partial "partial" wA
+\partial
+endsnippet
+
+context "math()"
+snippet nabla "nabla" wA
+\nabla
+endsnippet
+
+# ── Math mode: Greek letters ──────────────────────────────────────────────────
+
+context "math()"
+snippet alpha "alpha" wA
+\alpha
+endsnippet
+
+context "math()"
+snippet beta "beta" wA
+\beta
+endsnippet
+
+context "math()"
+snippet gamma "gamma" wA
+\gamma
+endsnippet
+
+context "math()"
+snippet Gamma "Gamma" wA
+\Gamma
+endsnippet
+
+context "math()"
+snippet delta "delta" wA
+\delta
+endsnippet
+
+context "math()"
+snippet Delta "Delta" wA
+\Delta
+endsnippet
+
+context "math()"
+snippet epsilon "epsilon" wA
+\epsilon
+endsnippet
+
+context "math()"
+snippet eta "eta" wA
+\eta
+endsnippet
+
+context "math()"
+snippet theta "theta" wA
+\theta
+endsnippet
+
+context "math()"
+snippet Theta "Theta" wA
+\Theta
+endsnippet
+
+context "math()"
+snippet lambda "lambda" wA
+\lambda
+endsnippet
+
+context "math()"
+snippet Lambda "Lambda" wA
+\Lambda
+endsnippet
+
+context "math()"
+snippet mu "mu" wA
+\mu
+endsnippet
+
+context "math()"
+snippet nu "nu" wA
+\nu
+endsnippet
+
+context "math()"
+snippet pi "pi" wA
+\pi
+endsnippet
+
+context "math()"
+snippet Pi "Pi" wA
+\Pi
+endsnippet
+
+context "math()"
+snippet rho "rho" wA
+\rho
+endsnippet
+
+context "math()"
+snippet sigma "sigma" wA
+\sigma
+endsnippet
+
+context "math()"
+snippet Sigma "Sigma" wA
+\Sigma
+endsnippet
+
+context "math()"
+snippet tau "tau" wA
+\tau
+endsnippet
+
+context "math()"
+snippet phi "phi" wA
+\phi
+endsnippet
+
+context "math()"
+snippet Phi "Phi" wA
+\Phi
+endsnippet
+
+context "math()"
+snippet chi "chi" wA
+\chi
+endsnippet
+
+context "math()"
+snippet psi "psi" wA
+\psi
+endsnippet
+
+context "math()"
+snippet Psi "Psi" wA
+\Psi
+endsnippet
+
+context "math()"
+snippet omega "omega" wA
+\omega
+endsnippet
+
+context "math()"
+snippet Omega "Omega" wA
+\Omega
+endsnippet
